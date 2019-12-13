@@ -2,12 +2,25 @@
 <html lang=en>
 <meta charset=utf-8>
 <title>ESPP taxation simulator</title>
-<style type="text/css">
+<style>
 body {
 	max-width: 1100px;
 	margin: 0 auto;
 	padding: 0 1em;
 	font-family: sans-serif;
+}
+form {
+	display: table;
+}
+form p {
+	display: table-row;
+}
+form div {
+	display: table-cell;
+	padding: .1em 0;
+}
+form div + div {
+	padding-left: 1em;
 }
 #timeline {
 	height: 5em;
@@ -16,13 +29,6 @@ body {
 	margin: 2em auto 0;
 	caption-side: bottom;
 	text-align: center;
-}
-table {
-	border-collapse: collapse;
-}
-th, td {
-	border: 1px solid black;
-	padding: .2em .4em;
 }
 #offering_period {
 	background-color: gray;
@@ -41,18 +47,15 @@ th, td {
 	width: 20%;
 	border-right-style: dashed;
 }
-form {
-	display: table;
+table {
+	border-collapse: collapse;
 }
-form p {
-	display: table-row;
+th, td {
+	border: 1px solid black;
+	padding: .2em .4em;
 }
-form div {
-	display: table-cell;
-	padding: .1em 0;
-}
-form div + div {
-	padding-left: 1em;
+#ltcg_desc_invalid {
+	display: none;
 }
 .loss {
 	color: red;
@@ -70,126 +73,165 @@ form div + div {
 </form>
 
 <table id="timeline"><caption>ESPP timeline</caption><tr>
-<td id="offering_period">Offering period (<span id="off_timeline_len">3 months</span>)</td>
+<td id="offering_period">Offering period (<span id="offlen_timeline">3 months</span>)</td>
 <td id="stcg">Disqualifying disposition; short-term capital gain (1 year)</td>
-<td id="ltcg">Disqualifying disposition; long-term capital gain (<span id="ltcg_timeline_len">9 months</span>)</td>
+<td id="ltcg">Disqualifying disposition; long-term capital gain (<span id="ltcglen_timeline">9 months</span>)</td>
 <td id="qualdist">Qualifying disposition (&infin;)</td>
 </tr></table>
 
 <h2>Results</h2>
-<p>You acquire your shares for <strong id="ord1">$93.50</strong> each. This is always taxed as <strong>ordinary income</strong> and is withheld from your paychecks as you contribute money throughout the offering period. You pay this tax the year of the offering period.
+<p>You acquire your shares for <strong id="ord_income">$93.50</strong> each. This is always taxed as <strong>ordinary income</strong> and is withheld from your paychecks as you contribute money throughout the offering period. You pay this tax the year of the offering period.
 
 <table id="results">
 <tr><th></th><th>STCG</th><th>LTCG; disqualifying disposition</th><th>Qualifying disposition</th></tr>
-<tr><td></td><td>You sell within 1 year of receiving the shares</td><td id="ltcg_desc">You sell between 1 year and <span id="ltcg_timeline_len">21 months</span> after receiving the shares</td><td>You sell more than <span id="disq_len">21 months</span> after receiving the shares</td></tr>
-<tr><td>Ordinary income at time of sale</td><td id="stcg_ord2">$16.50</td><td id="ltcg_ord2">$16.50</td><td id="qual_ord2">$15.00</td></tr>
-<tr><td>Total ordinary income</td><td id="stcg_ord">$110.00</td><td id="ltcg_ord">$110.00</td><td id="qual_ord">$108.50</td></tr>
+<tr><td></td><td>You sell within 1 year of receiving the shares</td><td><div id="ltcg_desc">You sell between 1 year and <span id="ltcg_desc_len">21 months</span> after receiving the shares</div><div id="ltcg_desc_invalid">n/a - you cannot do this under your plan</div></td><td>You sell more than <span id="disq_len">21 months</span> after receiving the shares</td></tr>
+<tr><td>Ordinary income at time of sale</td><td id="stcg_ord">$16.50</td><td id="ltcg_ord">$16.50</td><td id="qual_ord">$15.00</td></tr>
+<tr><td>Total ordinary income</td><td id="stcg_ord_tot">$110.00</td><td id="ltcg_ord_tot">$110.00</td><td id="qual_ord_tot">$108.50</td></tr>
 <tr><td>Capital gain/loss</td><td><span id="stcg_cg">$0.00</span> (short-term)</td><td><span id="ltcg_cg_outer"><span id="ltcg_cg">$0.00</span> (long-term)</span></td><td><span id="qual_cg">$1.50</span> (long-term)</td></tr>
 </table>
 
-<script type="text/javascript">
-function dispmoney(val) {
-	absval = "$" + Math.abs(val).toFixed(2);
-	if (val >= 0)
-		return absval;
-	else
-		return '<span class="loss">(' + absval + ')</span>';
-}
-function disp_months(val) {
-	if (val === 1)
-		return "1 month";
-	if (val === 12)
-		return "1 year";
-	if (val !== 0 && val % 12 === 0)
-		return (val / 12) + " years";
-	return val + " months";
-}
-
+<script>
 var $ = document.getElementById.bind(document);
 function calculate(lookback, offlen, discount, price1, price2, saleprice) {
+	// The actual price at which the stock was acquired
 	let acq_price = (1 - discount) * (lookback ? Math.min(price1, price2) : price2);
-	let disq_discount = price2 - acq_price;
-	let disq_capgains = saleprice - price2;
 
-	let qual_discount = Math.max(Math.min(saleprice - acq_price, discount * price1), 0);
-	let qual_capgains = saleprice - (acq_price + qual_discount);
+	// The discount received - taxed as ordinary income for a disqualifying disposition
+	let disq_ordinary = price2 - acq_price;
+	// Whatever wasn't treated as ordinary income is a capital gain/loss
+	let disq_capgain = saleprice - price2;
 
-	let ltcg_begin = 12 + offlen;
-	let ltcg_end = Math.max(24, ltcg_begin);
-	$('off_timeline_len').innerText = disp_months(offlen);
-	if (ltcg_end > ltcg_begin) {
-		let ltcg_len = ltcg_end - ltcg_begin;
-		$('offering_period').style.width = (offlen * 10 / 3) + "%";
+	// In case of a qualifying disposition, the ordinary income is the lesser of
+	// 1. The difference between the sale price and the actual amount paid (min 0), or
+	// 2. The discount which would have applied were the stock purchased on the grant date
+	let qual_ordinary = Math.min(Math.max(saleprice - acq_price, 0), discount * price1);
+	// And again, the rest is a capital gain/loss
+	let qual_capgain = saleprice - (acq_price + qual_ordinary);
+
+	// It is a disqualifying disposition if you sell before the later of 2 years from the
+	// grant date or 1 year after you receive the stock. How long is that after you
+	// receive the stock?
+	let disq_length = Math.max(24 - offlen, 12);
+	// You may go straight from disq. disp. with short-term cap gains to a qual. disq. if
+	// the offering period is long enough
+	let has_disqual_ltcg = disq_length > 12;
+
+	return {
+		'offering_length': offlen,
+		'disqual_length': disq_length,
+		'has_disqual_ltcg': has_disqual_ltcg,
+		'initial_ordinary_income': acq_price,
+		'disqualifying': {
+			'ordinary_income': disq_ordinary,
+			'capital_gain': disq_capgain
+		},
+		'qualifying': {
+			'ordinary_income': qual_ordinary,
+			'capital_gain': qual_capgain
+		}
+	};
+}
+function display(values) {
+	function disp_money(val) {
+		absval = "$" + Math.abs(val).toFixed(2);
+		if (val >= 0)
+			return absval;
+		else
+			return '<span class="loss">(' + absval + ') loss</span>';
+	}
+	function disp_months(val) {
+		if (val === 1)
+			return "1 month";
+		if (val === 12)
+			return "1 year";
+		if (val !== 0 && val % 12 === 0)
+			return (val / 12) + " years";
+		return val + " months";
+	}
+
+	// Timeline
+	$('offlen_timeline').innerText = disp_months(values.offering_length);
+	if (values.has_disqual_ltcg) {
+		// 12 months are STCG
+		let ltcg_len = values.disqual_length - 12;
+		$('ltcglen_timeline').innerText = disp_months(ltcg_len);
+
+		$('offering_period').style.width = (values.offering_length * 10 / 3) + "%";
 		$('stcg').style.width = "40%";
 		$('ltcg').style.display = "table-cell";
 		$('ltcg').style.width = (ltcg_len * 10 / 3) + "%";
 		$('qualdist').style.width = "20%";
-
-		$('ltcg_timeline_len').innerText = disp_months(ltcg_len);	
 	} else {
-		let tot = 18 + offlen;
-		$('offering_period').style.width = (offlen * 100 / tot) + "%";
+		// 18 = 12mo disq. disp. plus 6mo for the qual. disp.
+		let tot = 18 + values.offering_length;
+		$('offering_period').style.width = (values.offering_length * 100 / tot) + "%";
 		$('stcg').style.width = (1200 / tot) + "%";
-		$('ltcg').style.display = 'none';
+		$('ltcg').style.display = "none";
 		$('qualdist').style.width = (600 / tot) + "%";
 	}
 
-	let disq_length = disp_months(ltcg_end - offlen);
-	$('disq_len').innerText = disq_length;
+	// Results
+	$('ord_income').innerHTML = disp_money(values.initial_ordinary_income);
+
+	let disqual_length = disp_months(values.disqual_length);
+	$('disq_len').innerText = disqual_length;
 	let ltcg_desc = "n/a - you cannot do this under your plan";
-	if (ltcg_end > ltcg_begin) {
-		ltcg_desc = "You sell between 1 year and " + disq_length + " after receiving the shares";
-	}
-	$('ltcg_desc').innerText = ltcg_desc;
-
-	let ord1 = dispmoney(acq_price);
-	$('ord1').innerHTML = ord1;
-	// $('stcg_ord1').innerText = ord1;
-	// $('ltcg_ord1').innerText = ord1;
-	// $('qual_ord1').innerText = ord1;
-
-	let disq_ord2 = dispmoney(disq_discount);
-	$('stcg_ord2').innerHTML = disq_ord2;
-	if (ltcg_end > ltcg_begin) {
-		$('ltcg_ord2').innerHTML = disq_ord2;
+	if (values.has_disqual_ltcg) {
+		$('ltcg_desc_len').innerText = disqual_length;
+		$('ltcg_desc').style.display = "table-cell";
+		$('ltcg_desc_invalid').style.display = "none";
 	} else {
-		$('ltcg_ord2').innerText = '';
+		$('ltcg_desc').style.display = "none";
+		$('ltcg_desc_invalid').style.display = "table-cell";
 	}
-	$('qual_ord2').innerHTML = dispmoney(qual_discount);
 
-	let disq_ord = dispmoney(acq_price + disq_discount);
-	$('stcg_ord').innerHTML = disq_ord;
-	if (ltcg_end > ltcg_begin) {
-		$('ltcg_ord').innerHTML = disq_ord;
+	let disq_ordinary = disp_money(values.disqualifying.ordinary_income);
+	$('stcg_ord').innerHTML = disq_ordinary;
+	if (values.has_disqual_ltcg) {
+		$('ltcg_ord').innerHTML = disq_ordinary;
 	} else {
 		$('ltcg_ord').innerText = '';
 	}
-	$('qual_ord').innerHTML = dispmoney(acq_price + qual_discount);
+	$('qual_ord').innerHTML = disp_money(values.qualifying.ordinary_income);
 
-	let disq_cg = dispmoney(disq_capgains);
-	$('stcg_cg').innerHTML = disq_cg;
-	if (ltcg_end > ltcg_begin) {
-		$('ltcg_cg').innerHTML = disq_cg;
-		$('ltcg_cg_outer').style.visibility = 'visible';
+	let disq_ordinary_total = disp_money(values.initial_ordinary_income + values.disqualifying.ordinary_income);
+	$('stcg_ord_tot').innerHTML = disq_ordinary_total;
+	if (values.has_disqual_ltcg) {
+		$('ltcg_ord_tot').innerHTML = disq_ordinary_total;
 	} else {
-		$('ltcg_cg_outer').style.visibility = 'hidden';
+		$('ltcg_ord_tot').innerText = '';
 	}
-	$('qual_cg').innerHTML = dispmoney(qual_capgains);
+	$('qual_ord_tot').innerHTML = disp_money(values.initial_ordinary_income + values.qualifying.ordinary_income);
+
+	let disq_cg = disp_money(values.disqualifying.capital_gain);
+	$('stcg_cg').innerHTML = disq_cg;
+	if (values.has_disqual_ltcg) {
+		$('ltcg_cg').innerHTML = disq_cg;
+		$('ltcg_cg_outer').style.visibility = "visible";
+	} else {
+		$('ltcg_cg_outer').style.visibility = "hidden";
+	}
+	$('qual_cg').innerHTML = disp_money(values.qualifying.capital_gain);
 }
-function bound_calculate() {
+
+function update() {
 	if ($('lock').checked) {
 		$('saleprice').disabled = true;
 		$('saleprice').value = $('price2').value;
 	} else {
 		$('saleprice').disabled = false;
 	}
-	calculate(
+
+	let values = calculate(
 		$('lookback').checked,
 		parseInt($('offlen').value),
 		parseInt($('discount').value)/100,
 		parseFloat($('price1').value),
 		parseFloat($('price2').value),
 		parseFloat($('saleprice').value));
+
+	display(values);
 }
-[$('lookback'), $('offlen'), $('discount'), $('price1'), $('price2'), $('saleprice'), $('lock')].forEach(elem => elem.addEventListener('change', bound_calculate));
+
+[$('lookback'), $('offlen'), $('discount'), $('price1'), $('price2'), $('saleprice'), $('lock')].forEach(elem => elem.addEventListener('change', update));
 </script>
