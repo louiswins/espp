@@ -226,16 +226,62 @@ function update() {
 		$('saleprice').disabled = false;
 	}
 
+	var new_state = {
+		'lookback': $('lookback').checked,
+		'offlen': parseInt($('offlen').value),
+		'discount': parseInt($('discount').value),
+		'price1': Math.round(parseFloat($('price1').value), 2),
+		'price2': Math.round(parseFloat($('price2').value), 2),
+		'saleprice': Math.round(parseFloat($('saleprice').value), 2),
+		'lock': $('lock').checked
+	};
+
+	var query_params = new URLSearchParams();
+	for (let key in new_state) {
+		query_params.set(key, new_state[key]);
+	}
+
+	history.replaceState(new_state, "", window.location.pathname + "?" + query_params.toString());
+
 	let values = calculate(
-		$('lookback').checked,
-		parseInt($('offlen').value),
-		parseInt($('discount').value)/100,
-		parseFloat($('price1').value),
-		parseFloat($('price2').value),
-		parseFloat($('saleprice').value));
+		new_state.lookback,
+		new_state.offlen,
+		new_state.discount/100,
+		new_state.price1,
+		new_state.price2,
+		new_state.saleprice);
 
 	display(values);
 }
 
-[$('lookback'), $('offlen'), $('discount'), $('price1'), $('price2'), $('saleprice'), $('lock')].forEach(elem => elem.addEventListener('change', update));
+let interactive_items = ['lookback', 'offlen', 'discount', 'price1', 'price2', 'saleprice', 'lock'];
+interactive_items.forEach(elem => $(elem).addEventListener('change', update));
+
+
+function set_input(name, value) {
+	let elem = $(name);
+	if (elem.type === "checkbox") {
+		// URLSearchParams will give the string "false" so check for it
+		elem.checked = value && value !== "false";
+	} else {
+		elem.value = value;
+	}
+}
+if (history.state) {
+	let current_state = history.state;
+	interactive_items.forEach(item => set_input(item, current_state[item]));
+	update();
+} else {
+	let params = new URLSearchParams(window.location.search);
+	let any_set = false;
+	interactive_items.forEach(item => {
+		if (params.has(item)) {
+			set_input(item, params.get(item));
+			any_set = true;
+		}
+	});
+	if (any_set) {
+		update();
+	}
+}
 </script>
