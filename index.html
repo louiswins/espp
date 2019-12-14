@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang=en>
 <meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ESPP taxation simulator</title>
 <style>
 body {
@@ -8,6 +9,7 @@ body {
 	margin: 0 auto;
 	padding: 0 1em;
 	font-family: sans-serif;
+	line-height: 1.25;
 }
 form {
 	display: table;
@@ -15,19 +17,21 @@ form {
 form p {
 	display: table-row;
 }
-form div {
+form span {
 	display: table-cell;
 	padding: .1em 0;
 }
-form div + div {
+form span:first-child {
+	white-space: nowrap;
+}
+form span + span {
 	padding-left: 1em;
 }
 #timeline {
 	height: 5em;
 	width: 100%;
 	max-width: 1000px;
-	margin: 2em auto 0;
-	caption-side: bottom;
+	margin: 2em auto;
 	text-align: center;
 }
 #offering_period {
@@ -64,20 +68,13 @@ th, td {
 <body>
 <h1>ESPP taxation simulator</h1>
 <form>
-<p><div><input type="checkbox" id="lookback" name="lookback"></div><div><label for="lookback">Lookback provision (the discount applies to the price at the start of the offering period or the price at the end, whichever is lower)</label></div>
-<p><div><input type="number" id="offlen" name="offlen" min="1" max="27" value="3"></div><div><label for="offlen">Length of the offering period in months</label></div>
-<p><div><input type="number" id="discount" name="discount" min="0" max="15" value="15">%</div><div><label for="discount">Discount you receive on the stock</label></div>
-<p><div>$<input type="number" id="price1" name="price1" min="0" max="100000" value="100"></div><div><label for="price1">Stock price (market value) at the <strong>beginning</strong> of the offering period</label></div>
-<p><div>$<input type="number" id="price2" name="price2" min="0" max="100000" value="110"></div><div><label for="price2">Stock price (market value) at the <strong>end</strong> of the offering period</label></div>
-<p><div>$<input type="number" id="saleprice" name="saleprice" min="0" max="100000" value="110"></div><div><label for="saleprice">Sale price</label> (<input type="checkbox" id="lock" name="lock"> <label for="lock">Sell immediately - lock to ending price</label>)</div>
+<p><span><input type="checkbox" id="lookback" name="lookback"></span><span><label for="lookback">Lookback provision (the discount applies to the price at the start of the offering period or the price at the end, whichever is lower)</label></span>
+<p><span><input type="number" id="offlen" name="offlen" min="1" max="27" value="3"></span><span><label for="offlen">Length of the offering period in months</label></span>
+<p><span><input type="number" id="discount" name="discount" min="0" max="15" value="15">%</span><span><label for="discount">Discount you receive on the stock</label></span>
+<p><span>$<input type="number" id="price1" name="price1" min="0" max="100000" value="100"></span><span><label for="price1">Stock price (market value) at the <strong>beginning</strong> of the offering period</label></span>
+<p><span>$<input type="number" id="price2" name="price2" min="0" max="100000" value="110"></span><span><label for="price2">Stock price (market value) at the <strong>end</strong> of the offering period</label></span>
+<p><span>$<input type="number" id="saleprice" name="saleprice" min="0" max="100000" value="110"></span><span><label for="saleprice">Sale price</label> (<input type="checkbox" id="lock" name="lock"> <label for="lock">Sell immediately - lock to ending price</label>)</span>
 </form>
-
-<table id="timeline"><caption>ESPP timeline</caption><tr>
-<td id="offering_period">Offering period (<span id="offlen_timeline">3 months</span>)</td>
-<td id="stcg">Disqualifying disposition; short-term capital gain (1 year)</td>
-<td id="ltcg">Disqualifying disposition; long-term capital gain (<span id="ltcglen_timeline">9 months</span>)</td>
-<td id="qualdist">Qualifying disposition (&infin;)</td>
-</tr></table>
 
 <h2>Results</h2>
 <p>You acquire your shares for <strong id="ord_income">$93.50</strong> each. This is always taxed as <strong>ordinary income</strong> and is withheld from your paychecks as you contribute money throughout the offering period. You pay this tax the year of the offering period.
@@ -89,6 +86,13 @@ th, td {
 <tr><td>Total ordinary income</td><td id="stcg_ord_tot">$110.00</td><td id="ltcg_ord_tot">$110.00</td><td id="qual_ord_tot">$108.50</td></tr>
 <tr><td>Capital gain/loss</td><td><span id="stcg_cg">$0.00</span> (short-term)</td><td><span id="ltcg_cg_outer"><span id="ltcg_cg">$0.00</span> (long-term)</span></td><td><span id="qual_cg">$1.50</span> (long-term)</td></tr>
 </table>
+
+<table id="timeline"><caption>ESPP timeline</caption><tr>
+<td id="offering_period">Offering period (<span id="offlen_timeline">3 months</span>)</td>
+<td id="stcg">Disqualifying disposition; short-term capital gain (1 year)</td>
+<td id="ltcg">Disqualifying disposition; long-term capital gain (<span id="ltcglen_timeline">9 months</span>)</td>
+<td id="qualdist">Qualifying disposition (&infin;)</td>
+</tr></table>
 
 <script>
 var $ = document.getElementById.bind(document);
