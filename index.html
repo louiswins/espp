@@ -30,7 +30,6 @@ form span + span {
 #timeline {
 	height: 5em;
 	width: 100%;
-	max-width: 1000px;
 	margin: 2em auto;
 	text-align: center;
 }
@@ -61,6 +60,12 @@ th, td {
 #ltcg_desc_invalid {
 	display: none;
 }
+caption, h2 {
+	text-align: left;
+	font-size: 1.5em;
+	font-weight: bold;
+	margin-bottom: 0.8em;
+}
 .loss {
 	color: red;
 }
@@ -87,7 +92,7 @@ th, td {
 <tr><td>Capital gain/loss</td><td><span id="stcg_cg">$0.00</span> (short-term)</td><td><span id="ltcg_cg_outer"><span id="ltcg_cg">$0.00</span> (long-term)</span></td><td><span id="qual_cg">$1.50</span> (long-term)</td></tr>
 </table>
 
-<table id="timeline"><caption>ESPP timeline</caption><tr>
+<table id="timeline"><caption>Timeline</caption><tr>
 <td id="offering_period">Offering period (<span id="offlen_timeline">3 months</span>)</td>
 <td id="stcg">Disqualifying disposition; short-term capital gain (1 year)</td>
 <td id="ltcg">Disqualifying disposition; long-term capital gain (<span id="ltcglen_timeline">9 months</span>)</td>
