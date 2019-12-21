@@ -27,6 +27,10 @@ form span:first-child {
 form span + span {
 	padding-left: 1em;
 }
+input {
+	margin: 0;
+	vertical-align: middle;
+}
 #timeline {
 	height: 5em;
 	width: 100%;
@@ -85,7 +89,7 @@ footer {
 <p><span><input type="number" id="discount" name="discount" min="0" max="15" value="15">%</span><span><label for="discount">Discount you receive on the stock</label></span>
 <p><span>$<input type="number" id="price1" name="price1" min="0" max="100000" value="100"></span><span><label for="price1">Stock price (market value) at the <strong>beginning</strong> of the offering period</label></span>
 <p><span>$<input type="number" id="price2" name="price2" min="0" max="100000" value="110"></span><span><label for="price2">Stock price (market value) at the <strong>end</strong> of the offering period</label></span>
-<p><span>$<input type="number" id="saleprice" name="saleprice" min="0" max="100000" value="110"></span><span><label for="saleprice">Sale price</label> (<input type="checkbox" id="lock" name="lock"> <label for="lock">Sell immediately - lock to ending price</label>)</span>
+<p><span>$<input type="number" id="saleprice" name="saleprice" min="0" max="100000" value="110"></span><span><label for="saleprice">Sale price</label> (<input type="checkbox" id="lock" name="lock"> <label for="lock">Lock to ending price – compare only the discount</label>)</span>
 </form>
 
 <h2>Results</h2>
