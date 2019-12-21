@@ -81,7 +81,7 @@ footer {
 <body>
 <h1>ESPP taxation simulator</h1>
 
-<noscript><p>Interactivity depends on javascript. If you want to play with the numbers and see more than the default ones you'll need to enable it.</p></noscript>
+<noscript><p>Interactivity depends on javascript. If you want to play with the numbers and see more than the default ones you’ll need to enable it.</p></noscript>
 
 <form>
 <p><span><input type="checkbox" id="lookback" name="lookback"></span><span><label for="lookback">Lookback provision (the discount applies to the price at the start of the offering period or the price at the end, whichever is lower)</label></span>
@@ -93,12 +93,12 @@ footer {
 </form>
 
 <h2>Results</h2>
-<p>You acquire your shares for <strong id="ord_income">$93.50</strong> each. This is always taxed as <strong>ordinary income</strong> and is withheld from your paychecks as you contribute money throughout the offering period. You pay this tax the year of the offering period.
+<p>You acquire your shares for <strong id="ord_income">$93.50</strong> each. This is always taxed as <strong>ordinary income</strong>. It’s included on your W-2 and you pay tax on it like non-ESPP income.
 
 <table id="results">
 <tr><th></th><th>STCG</th><th>LTCG; disqualifying disposition</th><th>Qualifying disposition</th></tr>
 <tr><td></td><td>You sell within 1 year of receiving the shares</td><td><div id="ltcg_desc">You sell between 1 year and <span id="ltcg_desc_len">21 months</span> after receiving the shares</div><div id="ltcg_desc_invalid">n/a - you cannot do this under your plan</div></td><td>You sell more than <span id="disq_len">21 months</span> after receiving the shares</td></tr>
-<tr><td>Ordinary income at time of sale</td><td id="stcg_ord">$16.50</td><td id="ltcg_ord">$16.50</td><td id="qual_ord">$15.00</td></tr>
+<tr><td>Additional ordinary income (taxed the year of the sale)</td><td id="stcg_ord">$16.50</td><td id="ltcg_ord">$16.50</td><td id="qual_ord">$15.00</td></tr>
 <tr><td>Total ordinary income</td><td id="stcg_ord_tot">$110.00</td><td id="ltcg_ord_tot">$110.00</td><td id="qual_ord_tot">$108.50</td></tr>
 <tr><td>Capital gain/loss</td><td><span id="stcg_cg">$0.00</span> (short-term)</td><td><span id="ltcg_cg_outer"><span id="ltcg_cg">$0.00</span> (long-term)</span></td><td><span id="qual_cg">$1.50</span> (long-term)</td></tr>
 </table>
@@ -197,7 +197,6 @@ function display(values) {
 
 	let disqual_length = disp_months(values.disqual_length);
 	$('disq_len').innerText = disqual_length;
-	let ltcg_desc = "n/a - you cannot do this under your plan";
 	if (values.has_disqual_ltcg) {
 		$('ltcg_desc_len').innerText = disqual_length;
 		$('ltcg_desc').style.display = "table-cell";
